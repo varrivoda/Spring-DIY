@@ -1,8 +1,8 @@
 package com.example;
 
 public class CoronaDesinfector {
-    Announcer announcer = new ConsoleAnnouncer();
-    Policeman policeman= new PolicemanImpl();
+    Announcer announcer = ObjectFactory.getInstance().createObject(Announcer.class);
+    Policeman policeman= ObjectFactory.getInstance().createObject(Policeman.class);
 
     public void start(Room room){
         announcer.announce("Начинаем дезинфекцию, все вон!");
