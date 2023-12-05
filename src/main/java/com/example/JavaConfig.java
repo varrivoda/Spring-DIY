@@ -3,24 +3,26 @@ package com.example;
 import lombok.SneakyThrows;
 import org.reflections.Reflections;
 
+import java.util.Map;
 import java.util.Set;
 
 public class JavaConfig implements Config {
-    Reflections scanner;
+    private final Map<Class, Class> ifcToImplClass;
+    private Reflections scanner;
 
-    public JavaConfig(String packageToScan) {
+    public JavaConfig(String packageToScan, Map ifcToImplClass) {
         scanner = new Reflections(packageToScan);
+        this.ifcToImplClass= ifcToImplClass;
     }
 
-    @SneakyThrows
     @Override
     public <T> Class<? extends T> getImplClass(Class<T> ifc) {
-        Set<Class<?extends T>> classes = scanner.getSubTypesOf(ifc);
-        if(classes.size() != 1){
-            throw new Exception("Zero or more than one implementation of " +ifc.getName());
-        }
-        return classes.iterator().next();
-
+        return ifcToImplClass.computeIfAbsent(ifc, aClass->{
+                Set<Class<?extends T>> classes = scanner.getSubTypesOf(ifc);
+                if(classes.size() != 1){
+                    throw new RuntimeException(ifc.getSimpleName() + " has NO or more than one impls!");
+                }
+                return classes.iterator().next();
+            });
     }
-
 }
