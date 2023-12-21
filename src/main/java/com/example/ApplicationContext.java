@@ -1,5 +1,6 @@
 package com.example;
 
+import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Map;
@@ -11,6 +12,7 @@ public class ApplicationContext {
     }
 
     private ObjectFactory factory;
+    @Getter
     private Config config;
     private Map<Class, Object> cache = new ConcurrentHashMap<>();
 
@@ -27,7 +29,7 @@ public class ApplicationContext {
         T t = factory.getInstance().createObject(implClass);
 
         if(implClass.isAnnotationPresent(Singleton.class)){
-            cache.put(implClass, t);
+            cache.put(type, t);
         }
 
         return t;

@@ -18,14 +18,15 @@ import static java.util.stream.Collectors.toMap;
 
 public class ObjectFactory {
     private static ObjectFactory $$instance = new ObjectFactory();
-    private final Config config;
     private List<ObjectConfigurator> configurators = new ArrayList<>();
+    ApplicationContext context;
 
     @SneakyThrows
-    public ObjectFactory() {
-        config = new JavaConfig("com.example", new HashMap<>(Map.of(Policeman.class, AngryPoliceman.class)));
+    public ObjectFactory(ApplicationContext ñontext) {
+        this.context = ñontext;
+        config =context.getConfig();// new JavaConfig("com.example", new HashMap<>(Map.of(Policeman.class, AngryPoliceman.class)));
 
-        for (Class<? extends ObjectConfigurator> aClass : config.getScanner().getSubTypesOf(ObjectConfigurator.class)) {
+        for (Class<? extends ObjectConfigurator> aClass : context.getConfig().getScanner().getSubTypesOf(ObjectConfigurator.class)) {
             configurators.add(aClass.getDeclaredConstructor().newInstance());
         }
     }
@@ -35,11 +36,11 @@ public class ObjectFactory {
     }
 
     @SneakyThrows
-    public <T> T createObject(Class <T> type){
+    public <T> T createObject(Class <T> implClass){
 
         Object t =implClass.getDeclaredConstructor().newInstance();
 
-        configurators.forEach(objectConfigurator -> objectConfigurator.configure(t));
+        configurators.forEach(objectConfigurator -> objectConfigurator.configure(t, context));
 
         return (T) t;
     }

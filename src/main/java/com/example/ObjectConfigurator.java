@@ -1,5 +1,8 @@
 package com.example;
 
+import lombok.SneakyThrows;
+
 public interface ObjectConfigurator {
-    void configure(Object t);
+    @SneakyThrows
+    void configure(Object t, ApplicationContext context);
 }
