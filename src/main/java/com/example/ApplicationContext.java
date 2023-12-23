@@ -10,7 +10,7 @@ public class ApplicationContext {
     public ApplicationContext(Config config) {
         this.config = config;
     }
-
+    @Setter
     private ObjectFactory factory;
     @Getter
     private Config config;
@@ -26,7 +26,7 @@ public class ApplicationContext {
             implClass = config.getImplClass(type);
         }
 
-        T t = factory.getInstance().createObject(implClass);
+        T t = factory.createObject(implClass);
 
         if(implClass.isAnnotationPresent(Singleton.class)){
             cache.put(type, t);

@@ -1,5 +1,6 @@
 package com.example;
 
+import lombok.Setter;
 import lombok.SneakyThrows;
 
 import javax.naming.CannotProceedException;
@@ -17,22 +18,17 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toMap;
 
 public class ObjectFactory {
-    private static ObjectFactory $$instance = new ObjectFactory();
     private List<ObjectConfigurator> configurators = new ArrayList<>();
-    ApplicationContext context;
+    private final ApplicationContext context;
 
     @SneakyThrows
     public ObjectFactory(ApplicationContext ñontext) {
         this.context = ñontext;
-        config =context.getConfig();// new JavaConfig("com.example", new HashMap<>(Map.of(Policeman.class, AngryPoliceman.class)));
+        //config =context.getConfig();// new JavaConfig("com.example", new HashMap<>(Map.of(Policeman.class, AngryPoliceman.class)));
 
         for (Class<? extends ObjectConfigurator> aClass : context.getConfig().getScanner().getSubTypesOf(ObjectConfigurator.class)) {
             configurators.add(aClass.getDeclaredConstructor().newInstance());
         }
-    }
-
-    public static ObjectFactory getInstance() {
-        return $$instance;
     }
 
     @SneakyThrows
