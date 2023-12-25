@@ -9,6 +9,8 @@ import java.io.FileReader;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,10 +36,29 @@ public class ObjectFactory {
     @SneakyThrows
     public <T> T createObject(Class <T> implClass){
 
-        Object t =implClass.getDeclaredConstructor().newInstance();
+        Object t = create(implClass);
 
-        configurators.forEach(objectConfigurator -> objectConfigurator.configure(t, context));
+        configure(t);
+
+        invokeInit(implClass, t);
 
         return (T) t;
+    }
+
+    private <T> void invokeInit(Class<T> implClass, Object t) throws IllegalAccessException, InvocationTargetException {
+        for (Method method : implClass.getMethods()) {
+            if(method.isAnnotationPresent(PostConstruct.class)){
+                method.invoke(t);
+            }
+        }
+    }
+
+    private void configure(Object t) {
+        configurators.forEach(objectConfigurator -> objectConfigurator.configure(t, context));
+    }
+
+    private <T> Object create(Class<T> implClass) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        Object t = implClass.getDeclaredConstructor().newInstance();
+        return t;
     }
 }
