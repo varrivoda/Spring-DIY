@@ -1,6 +1,5 @@
 package com.example;
 
-@Deprecated
 @Singleton
 public class RecommendatorImpl implements Recommendator {
     @InjectProperty("whisky")
@@ -10,6 +9,8 @@ public class RecommendatorImpl implements Recommendator {
         System.out.println("Recommendator was created");
     }
 
+
+    @Deprecated
     @Override
     public void recommend() {
         System.out.println("*Реклама* Для защиты от COVID-19 пейте " + alcohol);
