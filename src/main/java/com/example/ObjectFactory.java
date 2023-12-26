@@ -8,9 +8,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.SerializedLambda;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +19,8 @@ import static java.util.stream.Collectors.toMap;
 
 public class ObjectFactory {
     private List<ObjectConfigurator> configurators = new ArrayList<>();
+    private List<ProxyConfigurator> proxyConfigurators = new ArrayList<>();
+
     private final ApplicationContext context;
 
     @SneakyThrows
@@ -31,18 +31,31 @@ public class ObjectFactory {
         for (Class<? extends ObjectConfigurator> aClass : context.getConfig().getScanner().getSubTypesOf(ObjectConfigurator.class)) {
             configurators.add(aClass.getDeclaredConstructor().newInstance());
         }
+
+        for (Class<? extends ProxyConfigurator> aClass : context.getConfig().getScanner().getSubTypesOf(ProxyConfigurator.class)) {
+            proxyConfigurators.add(aClass.getDeclaredConstructor().newInstance());
+        }
     }
 
     @SneakyThrows
     public <T> T createObject(Class <T> implClass){
 
-        Object t = create(implClass);
+        T t = create(implClass);
 
         configure(t);
 
         invokeInit(implClass, t);
 
-        return (T) t;
+        t = wrapWithProxyIfNeeded(implClass, t);
+
+        return t;
+    }
+
+    private <T> T wrapWithProxyIfNeeded(Class<T> implClass, T t) {
+        for(ProxyConfigurator proxyConfigurator: proxyConfigurators){
+            t = (T) proxyConfigurator.replaceWithProxyIfNeeded(t, implClass);
+        }
+        return t;
     }
 
     private <T> void invokeInit(Class<T> implClass, Object t) throws IllegalAccessException, InvocationTargetException {
@@ -57,8 +70,8 @@ public class ObjectFactory {
         configurators.forEach(objectConfigurator -> objectConfigurator.configure(t, context));
     }
 
-    private <T> Object create(Class<T> implClass) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-        Object t = implClass.getDeclaredConstructor().newInstance();
+    private <T> T create(Class<T> implClass) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        T t = implClass.getDeclaredConstructor().newInstance();
         return t;
     }
 }
