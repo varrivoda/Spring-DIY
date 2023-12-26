@@ -1,5 +1,6 @@
 package com.example;
 
+@Deprecated
 public class CoronaDesinfector {
     @InjectByType
     Announcer announcer;// = ObjectFactory.getInstance().createObject(Announcer.class);
